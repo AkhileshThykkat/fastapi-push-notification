@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 from database import engine, Base
-from router import UserRouter, CaseRouter
+from router import UserRouter, CaseRouter, WsRouter
 
 
 # @app.on_event("startup")
@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(UserRouter)
 app.include_router(CaseRouter)
+app.include_router(WsRouter)
 
 
 @app.get("/")
