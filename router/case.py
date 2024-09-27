@@ -4,7 +4,7 @@ from sqlalchemy.future import select
 
 from database import get_db
 from models import Case
-from websocket_manager import wsok_manager
+from websocket_manager import wsok_manager,redis_manager
 from schema import PushNotificationInput
 
 router = APIRouter(prefix="/case", tags=["cases"])
@@ -28,7 +28,10 @@ async def create_case(name: str, db: AsyncSession = Depends(get_db)):
 @router.put("/assign_to")
 async def assign_case(case_id: int, user_id: int, db: AsyncSession = Depends(get_db)):
     assigned = await Case.assign_case(case_id, user_id, db)
-    await wsok_manager.personal_notification(
+    try:
+        await wsok_manager.personal_message(
         message=PushNotificationInput(message="Case assigned to you", user_id=user_id)
-    )
+        )
+    except RuntimeError as e:
+        await redis_manager.store_message(user_id=user_id,message="Case assigned to you")
     return assigned
